@@ -20,8 +20,28 @@ router.get("/about", authenticate, (req, res) => {
     console.log("ABOUT")
     res.send(req.rootUser);
 });
-router.get("/Contact", (req, res) => {
-    res.send("<h1>Hello Contact</h1>");
+// for contact and home page
+router.get("/getdata", authenticate, (req, res) => {
+    res.send(req.rootUser);
+})
+router.post("/contact", authenticate, async (req, res) => {
+    try {
+        const { name, email, phone, message } = req.body;
+        if (!name || !email || !phone || !message) {
+            console.log("contact form error");
+            return res.json({ error: "Please Fill the contact form" });
+        }
+        const userContact = await User.findOne({ _id: req.userID });
+        if (userContact) {
+            const userMessage = await userContact.addMessage(name, email, phone, message);
+            await userContact.save();
+            res.status(201).json({ message: "Added Successfully" })
+        }
+
+    } catch (error) {
+        console.log(error);
+    }
+
 });
 router.get("/loggedin", (req, res) => {
     res.send("<h1>Hello login</h1>");
